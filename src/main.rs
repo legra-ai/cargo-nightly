@@ -31,10 +31,7 @@
 //! ```
 
 use std::env;
-use std::process::{
-    Command,
-    Stdio,
-};
+use std::process::{Command, Stdio};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
