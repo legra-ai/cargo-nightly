@@ -27,7 +27,7 @@ async-fs-io = "0.2.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "process"] }
 
 [build-dependencies]
-rhusky = "1.0.2"
+rhusky = "2.0.0"
 
 [package.metadata.binstall]
 pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ target }.{ archive-format }"
