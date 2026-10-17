@@ -14,22 +14,7 @@ keywords = ["cargo", "nightly", "toolchain", "cli", "alias"]
 categories = ["command-line-utilities", "development-tools"]
 publish = true
 
-exclude = [
-    ".cargo/",
-    ".cargo-husky/",
-    ".clippy.toml",
-    ".cursor/",
-    ".github/",
-    ".gitignore",
-    ".rust-toolchain.toml",
-    ".vscode/",
-    "cog.toml",
-    "rustfmt.toml",
-]
-
-[lib]
-name = "cargo_nightly"
-path = "src/lib.rs"
+include = ["src/**", "tests/**", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE-MIT", "LICENSE-APACHE"]
 
 [[bin]]
 name = "cargo-nightly"
@@ -37,9 +22,12 @@ path = "src/main.rs"
 
 [dependencies]
 
+[dev-dependencies]
+async-fs-io = "0.2.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "process"] }
+
 [build-dependencies]
-cargo-version-info = "0.0.21"
-rhusky = "0.0.6"
+rhusky = "1.0.2"
 
 [package.metadata.binstall]
 pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ target }.{ archive-format }"

@@ -78,7 +78,7 @@ Once installed, you can use it directly:
 
 ```bash
 cargo nightly clippy
-cargo nightly check
+cargo nightly build
 cargo nightly build
 ```
 
@@ -125,3 +125,15 @@ Copyright © 2026 DataRoad Inc, Delaware, USA, trading as Legra.
 
 Licensed under either the [MIT license](LICENSE-MIT) or the
 [Apache License, Version 2.0](LICENSE-APACHE), at your option.
+
+## Reproducible toolchains
+
+This wrapper deliberately selects floating `+nightly` for explicit
+nightly work. CI and normal builds should invoke Cargo directly with
+the repository's `rust-toolchain.toml` pin. The wrapper is unnecessary
+when that file already selects the intended compiler.
+
+`cargo nightly --help` and `cargo nightly --version` describe the
+installed wrapper without invoking Rustup. To query the selected
+Cargo instead, use `cargo nightly -- --version`. Command arguments
+and nonzero child exit codes are preserved.
