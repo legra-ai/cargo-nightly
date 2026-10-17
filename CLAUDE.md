@@ -52,13 +52,13 @@ cargo test
 
 ```bash
 # Format check (requires nightly)
-cargo +nightly fmt --all -- --check
+sh scripts/fmt.sh --check
 
 # Format code
-cargo +nightly fmt --all
+sh scripts/fmt.sh
 
 # Clippy (requires nightly)
-cargo +nightly clippy --all-targets --all-features -- -D warnings -W missing-docs
+cargo clippy --all-targets --all-features -- -D warnings -W missing-docs
 ```
 
 ## Code Style
@@ -77,30 +77,14 @@ The codebase is minimal by design:
 
 - `src/main.rs` - Binary entry point. Forwards arguments to
   `cargo +nightly <args>`, inheriting stdin/stdout/stderr and exit code
-- `src/lib.rs` - Library definition with documentation
-- `build.rs` - Computes version info from git/CI and installs git
-  hooks from `.githooks/`
+- `build.rs` - Installs hooks only in the owning checkout.
+- Executable identity is embedded Cargo package metadata.
 
-## Version Management
+## Version management
 
-Use `cargo version-info bump` for version management. This command
-updates Cargo.toml and creates a commit, but does NOT create tags
-(tags are created by CI after tests pass).
-
-```bash
-cargo version-info bump --patch   # 0.0.1 -> 0.0.2
-cargo version-info bump --minor   # 0.1.0 -> 0.2.0
-cargo version-info bump --major   # 1.0.0 -> 2.0.0
-```
-
-**Do NOT use `cog bump`** - it creates local tags which conflict
-with CI's tag creation workflow.
-
-**Workflow:**
-
-1. Create PR with version bump commit
-2. Merge PR to main
-3. CI detects version change, creates tag, publishes release
+`CI` is the sole publisher. Its shared tested-revision pipeline owns
+signed version preparation, package tests and six-target binaries.
+See `.github/PUBLISH.md`. Never move release tags or add a publisher.
 
 ## Git workflow
 

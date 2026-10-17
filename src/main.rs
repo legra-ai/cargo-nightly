@@ -1,59 +1,61 @@
-//! Cargo subcommand to forward commands to the nightly toolchain.
-//!
-//! This extension enables nightly toolchain usage in cargo aliases by
-//! providing a `cargo-nightly` subcommand that forwards all arguments to
-//! `cargo +nightly <args>`.
-//!
-//! ## Why it exists
-//!
-//! Cargo aliases in `.cargo/config.toml` cannot directly use `+nightly`
-//! syntax because cargo aliases can only invoke cargo subcommands, not
-//! external commands or toolchain selectors. This plugin provides a
-//! `cargo-nightly` subcommand that forwards all arguments to
-//! `cargo +nightly <args>`, making it possible to use nightly toolchain
-//! commands through cargo aliases.
-//!
-//! ## Usage
-//!
-//! Once installed, you can use it directly:
-//!
-//! ```bash
-//! cargo nightly clippy
-//! cargo nightly check
-//! ```
-//!
-//! Or through aliases in `.cargo/config.toml`:
-//!
-//! ```toml
-//! [alias]
-//! clippy2 = "nightly clippy"
-//! check2 = "nightly clippy"
-//! ```
+//! Cargo subcommand forwarding explicit nightly work to `cargo +nightly`.
+//! Use a repository's pinned compiler directly for reproducible CI.
 
 use std::env;
+use std::ffi::OsStr;
 use std::process::{
     Command,
     Stdio,
 };
 
+const USAGE: &str = "Usage: cargo nightly <COMMAND> [ARGS]...\n\nForward COMMAND and ARGS to cargo +nightly.\n  --help     Show wrapper help without invoking a toolchain\n  --version  Show the installed wrapper version\n\nUse -- before flags that should be forwarded directly to Cargo.";
+
+fn usage_error() -> ! {
+    eprintln!("{USAGE}");
+    std::process::exit(2);
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    // Skip the first argument (program name) and the second argument (nightly)
-    // Forward only the remaining arguments to cargo +nightly
-    let cargo_args = &args[2..];
-
-    // Build the command: cargo +nightly <args>
-    let mut cmd = Command::new("cargo");
-    cmd.arg("+nightly");
-    cmd.args(cargo_args);
-
-    // Forward stdin, stdout, stderr
-    cmd.stdin(Stdio::inherit());
-    cmd.stdout(Stdio::inherit());
-    cmd.stderr(Stdio::inherit());
-
-    // Execute the command and exit with the same code
-    let status = cmd.status().expect("Failed to execute cargo +nightly");
-    std::process::exit(status.code().unwrap_or(1));
+    let mut arguments = env::args_os().skip(1).peekable();
+    if arguments.next().as_deref() != Some(OsStr::new("nightly")) {
+        usage_error();
+    }
+    let Some(command) = arguments.next() else {
+        usage_error();
+    };
+    if command == "--help" || command == "-h" {
+        if arguments.peek().is_some() {
+            usage_error();
+        }
+        println!("{USAGE}");
+        return;
+    }
+    if command == "--version" || command == "-V" {
+        if arguments.peek().is_some() {
+            usage_error();
+        }
+        println!("cargo-nightly {}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
+    let mut child = Command::new("cargo");
+    child.arg("+nightly");
+    if command == "--" {
+        if arguments.peek().is_none() {
+            usage_error();
+        }
+    } else {
+        child.arg(command);
+    }
+    child
+        .args(arguments)
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit());
+    match child.status() {
+        Ok(status) => std::process::exit(status.code().unwrap_or(1)),
+        Err(error) => {
+            eprintln!("Failed to execute cargo +nightly: {error}");
+            std::process::exit(1);
+        }
+    }
 }
