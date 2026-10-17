@@ -14,7 +14,7 @@ keywords = ["cargo", "nightly", "toolchain", "cli", "alias"]
 categories = ["command-line-utilities", "development-tools"]
 publish = true
 
-include = ["src/**", "tests/**", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE-MIT", "LICENSE-APACHE"]
+include = ["src/**", "tests/**", "build.rs", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE-MIT", "LICENSE-APACHE"]
 
 [[bin]]
 name = "cargo-nightly"
